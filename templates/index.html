@@ -1,75 +1,482 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>우리 반 자리 배치</title>
+
   <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #020617;
+      --card: #0b1220;
+      --accent: #38bdf8;
+      --accent-soft: rgba(56, 189, 248, 0.1);
+      --text-main: #e5e7eb;
+      --text-sub: #9ca3af;
+      --danger: #f97373;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
     body {
+      min-height: 100vh;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #f5f5f5;
-      padding: 24px;
-    }
-    h1 {
-      text-align: center;
-      margin-bottom: 8px;
-    }
-    .info {
-      text-align: center;
-      margin-bottom: 20px;
-      color: #555;
-    }
-    .grid {
-      display: grid;
-      grid-auto-rows: 80px;
-      gap: 10px;
-      justify-content: center;
-    }
-    .seat {
-      border-radius: 12px;
-      border: 1px solid #ccc;
-      background: white;
+      background: radial-gradient(circle at top, #1e293b 0, #020617 55%);
+      color: var(--text-main);
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
-      font-size: 18px;
-      font-weight: 600;
+      padding: 24px;
     }
-    .empty {
-      background: #e0e0e0;
-      color: #888;
-      font-weight: 400;
+
+    .page {
+      width: 100%;
+      max-width: 960px;
+      background: linear-gradient(145deg, rgba(148, 163, 184, 0.08), rgba(15, 23, 42, 0.95));
+      border-radius: 24px;
+      box-shadow:
+        0 20px 40px rgba(15, 23, 42, 0.8),
+        0 0 0 1px rgba(148, 163, 184, 0.2);
+      padding: 24px 24px 28px;
+      backdrop-filter: blur(18px);
     }
-    .row-label {
-      text-align: center;
-      margin-top: 4px;
-      color: #777;
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .title-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .title {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .title .badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(248, 250, 252, 0.18);
+      background: rgba(15, 23, 42, 0.6);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--accent);
+    }
+
+    .title-sub {
+      font-size: 13px;
+      color: var(--text-sub);
+    }
+
+    .meta {
+      text-align: right;
+      font-size: 12px;
+      color: var(--text-sub);
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .meta strong {
+      color: var(--accent);
+    }
+
+    .meta-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      font-size: 11px;
+    }
+
+    .meta-pill span.dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #22c55e;
+      box-shadow: 0 0 10px rgba(34, 197, 94, 0.9);
+    }
+
+    .board {
+      margin-top: 6px;
+      margin-bottom: 16px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #0f172a, #020617);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border: 1px solid rgba(148, 163, 184, 0.35);
       font-size: 12px;
     }
+
+    .board-left {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: #e5e7eb;
+    }
+
+    .board-left::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--accent);
+      box-shadow: 0 0 16px rgba(56, 189, 248, 0.9);
+    }
+
+    .board-right {
+      color: var(--text-sub);
+      font-size: 11px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.85fr);
+      gap: 18px;
+      align-items: flex-start;
+    }
+
+    @media (max-width: 800px) {
+      .layout {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    .card {
+      background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.12), rgba(15, 23, 42, 0.96));
+      border-radius: 18px;
+      padding: 16px 18px 18px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.9);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #e5e7eb;
+    }
+
+    .card-sub {
+      font-size: 11px;
+      color: var(--text-sub);
+    }
+
+    .chip {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--accent);
+    }
+
+    .chip span.dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--accent);
+    }
+
+    /* 실제 좌석 그리드 */
+    .grid-wrapper {
+      margin-top: 4px;
+      padding: 10px 12px 12px;
+      border-radius: 14px;
+      background: radial-gradient(circle at top, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 1));
+      border: 1px solid rgba(148, 163, 184, 0.5);
+    }
+
+    .grid-caption {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: var(--text-sub);
+      margin-bottom: 8px;
+    }
+
+    .grid-caption span.front-tag {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid rgba(148, 163, 184, 0.55);
+    }
+
+    .seat-grid {
+      display: grid;
+      grid-template-columns: repeat({{ cols }}, 76px);
+      grid-auto-rows: 70px;
+      gap: 8px;
+      justify-content: center;
+    }
+
+    .seat {
+      position: relative;
+      border-radius: 14px;
+      background: linear-gradient(145deg, #020617, #020617);
+      border: 1px solid rgba(148, 163, 184, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-main);
+      box-shadow:
+        0 10px 18px rgba(15, 23, 42, 0.9),
+        0 0 0 1px rgba(15, 23, 42, 0.9);
+      transition:
+        transform 0.15s ease-out,
+        box-shadow 0.15s ease-out,
+        border-color 0.15s ease-out,
+        background 0.15s ease-out;
+      cursor: default;
+      overflow: hidden;
+    }
+
+    .seat::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.16), transparent 55%);
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    .seat span.label {
+      position: relative;
+      z-index: 1;
+    }
+
+    .seat.student:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent);
+      box-shadow:
+        0 16px 28px rgba(15, 23, 42, 0.95),
+        0 0 0 1px rgba(56, 189, 248, 0.5);
+    }
+
+    .seat.empty {
+      background: radial-gradient(circle at top, #020617, #020617);
+      border-style: dashed;
+      border-color: rgba(148, 163, 184, 0.5);
+      color: var(--text-sub);
+      font-weight: 400;
+    }
+
+    .seat-tag {
+      position: absolute;
+      bottom: 5px;
+      right: 7px;
+      font-size: 9px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.85);
+      color: var(--text-sub);
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      z-index: 1;
+    }
+
+    .legend {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 11px;
+      color: var(--text-sub);
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.4);
+    }
+
+    .legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 4px;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.4), #020617);
+    }
+
+    .legend-dot.empty {
+      background: #020617;
+      border-style: dashed;
+    }
+
+    .side-card {
+      font-size: 13px;
+      color: var(--text-sub);
+      line-height: 1.6;
+    }
+
+    .side-card ul {
+      margin-top: 8px;
+      list-style: none;
+      display: grid;
+      gap: 4px;
+    }
+
+    .side-card li::before {
+      content: "•";
+      margin-right: 6px;
+      color: var(--accent);
+    }
+
   </style>
 </head>
+
 <body>
-  <h1>우리 반 자리 배치</h1>
-  <div class="info">
-    행 {{ rows }} × 열 {{ cols }}<br>
-    총점: {{ best_score }}
-  </div>
+  <main class="page">
+    <header class="page-header">
+      <div class="title-group">
+        <div class="title">
+          우리 반 자리 배치
+          <span class="badge">Seat Optimizer</span>
+        </div>
+        <p class="title-sub">
+          학생별 좌석 선호도와 친구 관계를 반영해 자동으로 자리 배치를 계산한 결과입니다.
+        </p>
+      </div>
 
-  <!-- grid-template-columns 쪽에만 Jinja 변수 사용 (VSCode CSS 경고 방지) -->
-  <div class="grid" style="grid-template-columns: repeat({{ cols }}, 90px);">
-    {# 0행이 앞줄이라고 가정하고 위에서부터 출력 #}
-    {% for r in range(rows) %}
-      {% for c in range(cols) %}
-        {% set name = seat_grid[r][c] %}
-        {% if name %}
-          <div class="seat">{{ name }}</div>
-        {% else %}
-          <div class="seat empty">빈 자리</div>
-        {% endif %}
-      {% endfor %}
-    {% endfor %}
-  </div>
+      <div class="meta">
+        <span class="meta-pill">
+          <span class="dot"></span>
+          실시간 계산 완료
+        </span>
+        <span>
+          행 <strong>{{ rows }}</strong> × 열 <strong>{{ cols }}</strong>
+          &nbsp; · &nbsp;
+          전체 만족도 점수 <strong>{{ best_score }}</strong>
+        </span>
+      </div>
+    </header>
 
-  <div class="row-label">위쪽이 앞줄, 아래쪽이 뒷줄</div>
+    <div class="board">
+      <div class="board-left">
+        교실 앞 · 칠판
+      </div>
+      <div class="board-right">
+        위쪽이 앞줄, 아래쪽으로 갈수록 뒷줄입니다.
+      </div>
+    </div>
+
+    <section class="layout">
+      <!-- 좌석 그리드 영역 -->
+      <section class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Seating Map</div>
+            <div class="card-sub">각 사각형은 자리 1칸을 의미하며, 이름은 배정된 학생입니다.</div>
+          </div>
+          <div class="chip">
+            <span class="dot"></span>
+            Optimized layout
+          </div>
+        </div>
+
+        <div class="grid-wrapper">
+          <div class="grid-caption">
+            <span class="front-tag">FRONT</span>
+            <span>친구 호감도 + 좌석 호감도가 최대가 되도록 계산된 배치입니다.</span>
+          </div>
+
+          <div class="seat-grid">
+            {% for r in range(rows) %}
+              {% for c in range(cols) %}
+                {% set name = seat_grid[r][c] %}
+                {% if name %}
+                  <div class="seat student">
+                    <span class="label">{{ name }}</span>
+                    <span class="seat-tag">{{ r+1 }}행 · {{ c+1 }}열</span>
+                  </div>
+                {% else %}
+                  <div class="seat empty">
+                    <span class="label">빈 자리</span>
+                    <span class="seat-tag">unused</span>
+                  </div>
+                {% endif %}
+              {% endfor %}
+            {% endfor %}
+          </div>
+
+          <div class="legend">
+            <div class="legend-item">
+              <span class="legend-dot"></span>
+              배정된 좌석
+            </div>
+            <div class="legend-item">
+              <span class="legend-dot empty"></span>
+              비어 있는 좌석
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 설명 / 요약 영역 -->
+      <aside class="card side-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">배치 기준 요약</div>
+            <div class="card-sub">이 자리 배치는 다음과 같은 조건을 고려해 계산됩니다.</div>
+          </div>
+        </div>
+
+        <ul>
+          <li><strong>좌석 호감도</strong> · 학생마다 선호하는 자리 위치(앞/뒤, 창가 등)를 점수로 반영합니다.</li>
+          <li><strong>친구 관계</strong> · 친구/비선호 관계를 맨해튼 거리 기반으로 가중치를 주어 고려합니다.</li>
+          <li><strong>최적화 알고리즘</strong> · 헝가리안 알고리즘과 스왑 탐색으로 전체 만족도 점수를 최대화합니다.</li>
+          <li><strong>공정성</strong> · 특정 학생만 극단적으로 불리해지지 않도록 전체 배치를 미세 조정합니다.</li>
+        </ul>
+
+        <p style="margin-top: 14px; font-size: 12px;">
+          알고리즘이나 가중치(친구 호감도, 좌석 점수)를 조정하면 <br />
+          같은 교실에서도 여러 가지 배치 시나리오를 실험해 볼 수 있습니다.
+        </p>
+      </aside>
+    </section>
+  </main>
 </body>
 </html>
