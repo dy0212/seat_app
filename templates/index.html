@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>우리 반 자리 배치</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f5f5f5;
+      padding: 24px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 8px;
+    }
+    .info {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #555;
+    }
+    .grid {
+      display: grid;
+      grid-auto-rows: 80px;
+      gap: 10px;
+      justify-content: center;
+    }
+    .seat {
+      border-radius: 12px;
+      border: 1px solid #ccc;
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      font-size: 18px;
+      font-weight: 600;
+    }
+    .empty {
+      background: #e0e0e0;
+      color: #888;
+      font-weight: 400;
+    }
+    .row-label {
+      text-align: center;
+      margin-top: 4px;
+      color: #777;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <h1>우리 반 자리 배치</h1>
+  <div class="info">
+    행 {{ rows }} × 열 {{ cols }}<br>
+    총점: {{ best_score }}
+  </div>
+
+  <!-- grid-template-columns 쪽에만 Jinja 변수 사용 (VSCode CSS 경고 방지) -->
+  <div class="grid" style="grid-template-columns: repeat({{ cols }}, 90px);">
+    {# 0행이 앞줄이라고 가정하고 위에서부터 출력 #}
+    {% for r in range(rows) %}
+      {% for c in range(cols) %}
+        {% set name = seat_grid[r][c] %}
+        {% if name %}
+          <div class="seat">{{ name }}</div>
+        {% else %}
+          <div class="seat empty">빈 자리</div>
+        {% endif %}
+      {% endfor %}
+    {% endfor %}
+  </div>
+
+  <div class="row-label">위쪽이 앞줄, 아래쪽이 뒷줄</div>
+</body>
+</html>
